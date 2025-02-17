@@ -27,7 +27,7 @@ const App = () => {
 	const [pageState, setPageState] =
 		useState<StylesStateType>(DEFAULT_PAGE_STATE);
 
-	const onSubmit = (event: any) => {
+	const onSubmit = (event: StylesStateType) => {
 		setPageState({
 			fontFamily: event.fontFamily,
 			fontColor: event.fontColor,

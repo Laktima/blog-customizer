@@ -1,10 +1,9 @@
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
 import clsx from 'clsx';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect, useRef } from 'react';
 
 import styles from './ArticleParamsForm.module.scss';
-
 import { Select } from 'src/ui/select';
 import { Text } from 'src/ui/text';
 import { RadioGroup } from 'src/ui/radio-group';
@@ -27,7 +26,7 @@ export type StylesStateType = {
 };
 
 type ArticleParamsFormProps = {
-	onSubmit: (value: any) => void;
+	onSubmit: (value: StylesStateType) => void;
 	resetState: () => void;
 };
 
@@ -43,14 +42,14 @@ export const ArticleParamsForm = ({
 	onSubmit,
 	resetState,
 }: ArticleParamsFormProps) => {
-	const [isOpen, setIsOpen] = useState<boolean>(false);
 	const [formState, setFormState] =
 		useState<StylesStateType>(DEFAULT_FORM_STATE);
+	const formRef = useRef<HTMLDivElement>(null);
+	const [isOpen, setIsOpen] = useState<boolean>(false);
 
-	const handleIsOpenToggle = () => {
-		setIsOpen(!isOpen);
+	const handleIsOpenToggle = (value: boolean) => {
+		setIsOpen(value);
 	};
-
 	const handleFontFamilyChange = (option: OptionType) => {
 		setFormState({
 			...formState,
@@ -96,9 +95,35 @@ export const ArticleParamsForm = ({
 		resetState();
 	};
 
+	useEffect(() => {
+		const handleClickOutside = (evt: MouseEvent) => {
+			if (formRef.current && !formRef.current.contains(evt.target as Node)) {
+				handleIsOpenToggle(false);
+			}
+		};
+
+		const handleEscPress = (evt: KeyboardEvent) => {
+			if (evt.key === 'Escape') {
+				handleIsOpenToggle(false);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		document.addEventListener('keyup', handleEscPress);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+			document.addEventListener('keyup', handleEscPress);
+		};
+	}, [formRef]);
+
 	return (
-		<>
-			<ArrowButton isOpen={isOpen} onClick={handleIsOpenToggle} />
+		<div ref={formRef}>
+			<ArrowButton
+				isOpen={isOpen}
+				onClick={() => {
+					handleIsOpenToggle(!isOpen);
+				}}
+			/>
 			<aside
 				className={clsx(styles.container, { [styles.container_open]: isOpen })}>
 				<form
@@ -164,6 +189,6 @@ export const ArticleParamsForm = ({
 					</div>
 				</form>
 			</aside>
-		</>
+		</div>
 	);
 };
